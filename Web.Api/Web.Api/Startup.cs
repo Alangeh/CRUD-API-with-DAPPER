@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Web.Api.EndPoints;
+using Web.Api.Services;
 
 namespace Web.Api
 {
@@ -32,6 +34,15 @@ namespace Web.Api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Web.Api", Version = "v1" });
             });
+
+            services.AddSingleton(serviceProvider =>
+            {
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+                var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new ApplicationException("The connection String is null");
+
+                return new SqlConnectionFactory(connectionString);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,20 +55,9 @@ namespace Web.Api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Web.Api v1"));
             }
 
-            app.Map("customers", async (IConfiguration configuration) =>
-            {
-                var connectionString = configuration.GetConnectionString("DefaultConnection")!;
-
-                using var connection = new SQLConnection(connectionString);
-
-                const string sql = "SELECT * FROM Customers";
-
-                var customers = await connection.QueryAsync<Customers>(sql);
-
-                return Results.Ok(customers);
-            });
-
             app.UseHttpsRedirection();
+
+            app.MapCustomerEndpoints();
 
             app.UseRouting();
 
