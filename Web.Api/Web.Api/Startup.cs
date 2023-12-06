@@ -44,13 +44,17 @@ namespace Web.Api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Web.Api v1"));
             }
 
-            app.MapGet("customers", (IConfiguration configuration) =>
+            app.Map("customers", async (IConfiguration configuration) =>
             {
                 var connectionString = configuration.GetConnectionString("DefaultConnection")!;
 
                 using var connection = new SQLConnection(connectionString);
 
                 const string sql = "SELECT * FROM Customers";
+
+                var customers = await connection.QueryAsync<Customers>(sql);
+
+                return Results.Ok(customers);
             });
 
             app.UseHttpsRedirection();
