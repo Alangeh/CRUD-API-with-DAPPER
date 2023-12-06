@@ -21,6 +21,20 @@ namespace Web.Api.EndPoints
                 return Results.Ok(customers);
             });
 
+            builder.MapGet("customers/{id}", (int id, SqlConnectionFactory sqlConnectionFactory) =>
+            {
+                using var connection = sqlConnectionFactory.Create();
+
+                const string sql = "SELECT * FROM Customers" +
+                "WHERE Id = @CustomerId";
+
+                var customer = await connection.QuerySingleOrDefaultAsync<Customers>(sql, new { CustomerId = id });
+
+                return customer is not null ? Results.Ok(customer) : Results.NotFound();
+            });
+
+            
+
         }
     }
 }
