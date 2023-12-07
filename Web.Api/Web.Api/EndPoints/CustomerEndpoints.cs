@@ -45,6 +45,19 @@ namespace Web.Api.EndPoints
                 return Results.Ok(customer);
             });
 
+            builder.MapPut("customers/{id}", async (int id, Customer customer, SqlConnectionFactory sqlConnectionFactory) =>
+            {
+                using var connection = SqlConnectionFactory.Create();
+
+                customer.Id = id;
+
+                const string sql = "UPDATE Customers SET FirstName = @FirstName, LastName = @LastName, Email = @Email, DateOfBirth = @DateOfBirth WHERE Id = @Id";
+
+                await connection.ExecuteAsync(sql, customer);
+
+                return Results.NoContent();
+            });
+
         }
     }
 }
