@@ -58,6 +58,17 @@ namespace Web.Api.EndPoints
                 return Results.NoContent();
             });
 
+            builder.MapDelete("customer/{id}", async (int id, SqlConnectionFactory sqlConnectionFactory) =>
+            {
+                using var connection = sqlConnectionFactory.Create();
+
+                const string sql = "DELETE FROM Customers WHERE Id = @CustomerId";
+
+                await connection.ExecuteAsync(sql, new { CustomerId = id });
+
+                return Results.NoContent();
+            });
+
         }
     }
 }
