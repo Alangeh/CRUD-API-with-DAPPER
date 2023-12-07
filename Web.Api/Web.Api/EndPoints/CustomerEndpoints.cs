@@ -33,7 +33,17 @@ namespace Web.Api.EndPoints
                 return customer is not null ? Results.Ok(customer) : Results.NotFound();
             });
 
-            
+            builder.MapPost("customers", async (Customer customer, SqlConnectionFactory sqlConnectionFactory) =>
+            {
+                using var connection = sqlConnectionFactory.Create();
+
+                const string sql = "INSERT INTO Customers (FirstName, LastName, Email, DateOfBirth)" +
+                "VALUES (@FirstName, @LastName, @Email, @DateOfBirth)";
+
+                await connection.ExecuteAsync(sql, customer);
+
+                return Results.Ok(customer);
+            });
 
         }
     }
